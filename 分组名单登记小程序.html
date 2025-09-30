@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分组名单登记</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-right: 10px;
+            transition: background 0.3s ease;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        .success {
+            color: #27ae60;
+            font-weight: 600;
+            margin: 15px 0;
+            text-align: center;
+            display: none;
+        }
+        .info {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 14px;
+            color: #2980b9;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        .export-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f1f8ff;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .export-btn {
+            background: #27ae60;
+            font-size: 18px;
+            padding: 14px 30px;
+            border-radius: 10px;
+        }
+        .export-btn:hover {
+            background: #219653;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 分组名单登记</h1>
+        
+        <div class="info">
+            <strong>使用说明：</strong>填写组长和组员姓名后点击"提交"，可随时导出完整名单。
+        </div>
+        
+        <div class="form-group">
+            <label for="leader">组长</label>
+            <input type="text" id="leader" placeholder="请输入组长姓名">
+        </div>
+        
+        <div class="form-group">
+            <label for="member1">组员1</label>
+            <input type="text" id="member1" placeholder="请输入组员1姓名">
+        </div>
+        
+        <div class="form-group">
+            <label for="member2">组员2</label>
+            <input type="text" id="member2" placeholder="请输入组员2姓名">
+        </div>
+        
+        <div class="form-group">
+            <label for="member3">组员3</label>
+            <input type="text" id="member3" placeholder="请输入组员3姓名">
+        </div>
+        
+        <button onclick="submitGroup()">提交分组信息</button>
+        
+        <!-- 独立的导出Excel区域 -->
+        <div class="export-section">
+            <h3>📤 导出数据</h3>
+            <p>点击下方按钮可随时导出所有分组信息</p>
+            <button onclick="exportToExcel()" class="export-btn">导出Excel表格</button>
+        </div>
+        
+        <p id="successMessage" class="success">✅ 分组信息提交成功！</p>
+    </div>
+    
+    <div class="footer">
+        <p>© 2025 分组名单登记系统 | 数据实时同步到云端</p>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app
