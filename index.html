@@ -8,7 +8,7 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 600px;
+            max-width: 800px;
             margin: 40px auto;
             padding: 20px;
             background-color: #f8f9fa;
@@ -86,7 +86,7 @@
             font-size: 14px;
         }
         .export-section {
-            margin-top: 20px;
+            margin-top: 30px;
             padding: 20px;
             background: #f1f8ff;
             border-radius: 8px;
@@ -101,6 +101,28 @@
         .export-btn:hover {
             background: #219653;
         }
+        /* 新增：表格样式 */
+        .results-table {
+            width: 100%;
+            margin-top: 30px;
+            border-collapse: collapse;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .results-table th,
+        .results-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .results-table th {
+            background-color: #3498db;
+            color: white;
+        }
+        .results-table tr:hover {
+            background-color: #f1f8ff;
+        }
     </style>
 </head>
 <body>
@@ -108,7 +130,7 @@
         <h1>📝 分组名单登记</h1>
         
         <div class="info">
-            <strong>使用说明：</strong>填写组长和组员姓名后点击"提交"，可随时导出完整名单。
+            <strong>使用说明：</strong>学生填写组长和组员姓名后点击"提交"，老师可随时导出完整名单。
         </div>
         
         <div class="form-group">
@@ -133,6 +155,22 @@
         
         <button onclick="submitGroup()">提交分组信息</button>
         
+        <!-- 显示已提交的名单 -->
+        <h3 style="margin-top: 30px;">✅ 已提交的分组名单</h3>
+        <table class="results-table" id="resultsTable">
+            <thead>
+                <tr>
+                    <th>组长</th>
+                    <th>组员1</th>
+                    <th>组员2</th>
+                    <th>组员3</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- 数据将动态插入到这里 -->
+            </tbody>
+        </table>
+        
         <!-- 独立的导出Excel区域 -->
         <div class="export-section">
             <h3>📤 导出数据</h3>
@@ -148,4 +186,117 @@
     </div>
 
     <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script>
+        // 🔥 替换为您的 Firebase 配置
+         const firebaseConfig = {
+    apiKey: "AIzaSyAgsBf8lXw74hRzjt-o6Cq3I30ILwXUXRU",
+    authDomain: "course-related-b6255.firebaseapp.com",
+    databaseURL: "https://course-related-b6255-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "course-related-b6255",
+    storageBucket: "course-related-b6255.firebasestorage.app",
+    messagingSenderId: "803901694223",
+    appId: "1:803901694223:web:a50b3cad23021617c45e7a"
+  };
+
+        // 初始化 Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database().ref("groups");
+
+        // 存储所有数据的数组
+        let allGroups = [];
+
+        // 页面加载时获取所有数据
+        window.onload = function() {
+            loadAllData();
+        };
+
+        // 从 Firebase 加载所有数据
+        function loadAllData() {
+            db.on("value", (snapshot) => {
+                const data = snapshot.val();
+                allGroups = [];
+                const tableBody = document.getElementById("tableBody");
+                tableBody.innerHTML = "";
+
+                if (data) {
+                    Object.keys(data).forEach(key => {
+                        const group = data[key];
+                        allGroups.push(group);
+
+                        // 动态添加行
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${group.leader || ''}</td>
+                            <td>${group.member1 || ''}</td>
+                            <td>${group.member2 || ''}</td>
+                            <td>${group.member3 || ''}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                }
+            });
+        }
+
+        // 提交分组信息
+        function submitGroup() {
+            const leader = document.getElementById("leader").value.trim();
+            const member1 = document.getElementById("member1").value.trim();
+            const member2 = document.getElementById("member2").value.trim();
+            const member3 = document.getElementById("member3").value.trim();
+
+            if (!leader) {
+                alert("请输入组长姓名！");
+                return;
+            }
+
+            // 保存到 Firebase
+            db.push({
+                leader,
+                member1,
+                member2,
+                member3,
+                timestamp: new Date().toISOString()
+            });
+
+            // 清空输入框
+            document.getElementById("leader").value = "";
+            document.getElementById("member1").value = "";
+            document.getElementById("member2").value = "";
+            document.getElementById("member3").value = "";
+
+            // 显示成功提示
+            const successMsg = document.getElementById("successMessage");
+            successMsg.style.display = "block";
+            setTimeout(() => {
+                successMsg.style.display = "none";
+            }, 3000);
+        }
+
+        // 导出为 Excel
+        function exportToExcel() {
+            if (allGroups.length === 0) {
+                alert("暂无数据可导出！");
+                return;
+            }
+
+            // 准备数据
+            const exportData = allGroups.map(g => ({
+                "组长": g.leader,
+                "组员1": g.member1,
+                "组员2": g.member2,
+                "组员3": g.member3
+            }));
+
+            // 创建工作簿
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "分组名单");
+
+            // 导出文件
+            XLSX.writeFile(wb, `分组名单_${new Date().toLocaleDateString()}.xlsx`);
+        }
+    </script>
+</body>
+</html>
